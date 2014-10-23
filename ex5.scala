@@ -42,13 +42,32 @@ object ex5 {
     def forAll(p: A => Boolean): Boolean = foldRight(true)((a, b) => p(a) && b)
 
     // 5.5
+    // works but is weird/long
+    import Stream._
     def takeWhile(p: A => Boolean): Stream[A] =
       foldRight(Empty: Stream[A])((a, b) =>
-        if (p(a)) Cons(() => a, () => b.takeWhile(p))
+        if (p(a)) cons(a, b)
         else Empty)
 
     // 5.6
     def headOption0: Option[A] = foldRight(None: Option[A])((a, b) => Some(a))
+
+    // 5.7
+    // def map[A, B](f: A => B) =
+    //   foldRight(Empty: Stream[B])((h, t) => Cons(() => f(h), () => t))
+    def map[B](f: A => B): Stream[B] =
+      foldRight(empty[B])((h,t) => cons(f(h), t))
+
+    def append[B>:A](s: => Stream[B]): Stream[B] =
+      foldRight(s)((h, t) => cons(h, t))
+
+    def flatMap[B](f: A => Stream[B]): Stream[B] =
+      foldRight(empty[B])((h, t) => f(h).append(t))
+
+    // why doesVthis have to be a B? O_o
+    def filter[B](f: A => Boolean): Stream[A] =
+      foldRight(empty[A])((h, t) => if (f(h)) cons(h, t) else t)
+
   }
 
   case object Empty extends Stream[Nothing]
