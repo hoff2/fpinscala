@@ -91,11 +91,66 @@ object ex6 {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(List[A]()))((hr, tr) => map2(hr, tr)(_::_))
 
+  def _ints(count: Int): Rand[List[Int]] = {
+    sequence(List.fill(count)(int))
+  }
+
   // "But there are some functions that we can’t very well write in
   //   terms of map and map2. One such function is
   //   nonNegativeLessThan, which generates an integer between 0
   //   (inclusive) and n (exclusive):"
   // Says who?:
-  def nonNegativeLessThan(n: Int): Rand[Int] = map(mdouble)(d => (d * n).floor.toInt)
+  def _nonNegativeLessThan(n: Int): Rand[Int] = map(mdouble)(d => (d * n).floor.toInt)
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+    val (i, rng2) = nonNegativeInt(rng)
+    val mod = i % n
+    if (i + (n-1) - mod >= 0)
+      (mod, rng2)
+    else nonNegativeLessThan(n)(rng)
+  }
+
+  // 6.8
+  def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = rng => {
+    val (a, rng2) = s(rng)
+    f(a)(rng2)
+  }
+
+  // 6.9 :[
+  def _map[A, B](s: Rand[A])(f: A => B): Rand[B] = flatMap(s)(a => unit(f(a)))
+  def _map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = flatMap(ra)(a => _map(rb)(b => f(a, b)))
+}
+
+
+
+object ex66 {
+
+  type Rand[A] = State[ex6.RNG, A]
+
+  import State._
+
+  // 6.10 :[
+  case class State[S, +A](run: S => (A, S)) {
+
+    def flatMap[B](f: A => State[S, B]): State[S, B] =
+      State(s => {
+              val (a, ns) = run(s)
+              f(a).run(ns)
+            })
+
+    def map[B](f: A => B): State[S, B] =
+     flatMap(a => unit(f(a)))
+
+    def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+      flatMap(a => sb.map(b => f(a, b)))
+  }
+
+  object State {
+    def unit[S, A](a: A): State[S, A] = State(s => (a, s))
+    def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
+      fs.foldRight(unit[S, List[A]](List()))((hr, tr) => hr.map2(tr)(_::_))
+    //                 ^^^^^^^^^^^^ how we were supposed to know this, i have no idea
+  }
+
 
 }
