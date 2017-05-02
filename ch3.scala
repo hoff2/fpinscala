@@ -119,3 +119,15 @@ def zipWith[A](l1: List[A], l2: List[A])(f: (A, A) => A): List[A] =
       Cons(f(h1, h2), zipWith(t1, t2)(f))
     case (_,_) => Nil
   }
+
+def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+  def startsWith[A](l: List[A], p: List[A]): Boolean = (l, p) match {
+    case (Cons(lh, lt), Cons(ph, pt)) => lh == ph && startsWith(lt, pt)
+    case (_, Nil) => true
+    case (_, _) => false
+  }
+  sup match {
+    case Cons(h, t) => startsWith(sup, sub) || hasSubsequence(t, sub)
+    case _ => false
+  }
+}
