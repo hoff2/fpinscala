@@ -110,7 +110,7 @@ object ex6 {
     else nonNegativeLessThan(n)(rng)
   }
 
-  // 6.8
+  // 6.8 :[
   def flatMap[A, B](s: Rand[A])(f: A => Rand[B]): Rand[B] = rng => {
     val (a, rng2) = s(rng)
     f(a)(rng2)
@@ -147,10 +147,32 @@ object ex66 {
 
   object State {
     def unit[S, A](a: A): State[S, A] = State(s => (a, s))
+
     def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
       fs.foldRight(unit[S, List[A]](List()))((hr, tr) => hr.map2(tr)(_::_))
-    //                 ^^^^^^^^^^^^ how we were supposed to know this, i have no idea
+    //                 ^^^^^^^^^^^^ how we were supposed to know to put this here,
+    //                              i have no idea
+
+    def modify[S](f: S => S): State[S, Unit] = for {
+      s <- get // Gets the current state and assigns it to `s`.
+      _ <- set(f(s)) // Sets the new state to `f` applied to `s`.
+    } yield ()
+
+    def get[S]: State[S, S] = State(s => (s, s))
+
+    def set[S](s: S): State[S, Unit] = State(_ => ((), s))
   }
 
+  // 6.11
+  sealed trait Input
+  case object Coin extends Input
+  case object Turn extends Input
+  case class Machine(locked: Boolean, candies: Int, coins: Int)
 
+  //            I see what you did there ---VVVVVVVVVVVVV
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    State.sequence(
+      inputs.map(input => modify[Machine](machine => machine)))
+
+  }
 }
