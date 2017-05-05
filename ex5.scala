@@ -43,7 +43,7 @@ object ex5 {
 
     // 5.5
     // works but is weird/long
-    import Stream._
+//    import Stream._
     def takeWhile(p: A => Boolean): Stream[A] =
       foldRight(Empty: Stream[A])((a, b) =>
         if (p(a)) cons(a, b)
@@ -84,6 +84,7 @@ object ex5 {
       case Cons(h, t) => if (p(h())) Some((h(), t())) else None
     }
 
+    // i misunderstood the meaning of "with" here (didn't refer back to ch. 3)
     def uzipWith[B](those: Stream[B]): Stream[(A, B)] = unfold((this, those)){
       case (Empty, _) | (_, Empty) => None
       case (Cons(ah, at), Cons(bh, bt)) => Some((ah(), bh()), (at(), bt()))
@@ -143,7 +144,8 @@ object ex5 {
 
     // 5.10
     def fibs: Stream[Int] = {
-     def fibsFrom(n1: Int, n2: Int): Stream[Int] = Stream.cons(n1, fibsFrom(n2, n1+n2))
+      def fibsFrom(n1: Int, n2: Int): Stream[Int] =
+        cons(n1, fibsFrom(n2, n1+n2))
       fibsFrom(0, 1)
     }
 
