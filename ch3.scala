@@ -1,3 +1,4 @@
+package fpinscala.datastructures
 import scala.collection.immutable.{List => _, Nil => _}
 
 object Ch3Tree {
