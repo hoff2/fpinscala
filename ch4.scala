@@ -1,8 +1,8 @@
-//package fpinscala.errorhandling
+package fpinscala.errorhandling
 
 import scala.{Option => _, Either => _, _}
 
-object Ch4 {
+object Ch4_Option {
 
   sealed trait Option[+A] {
     def map[B](f: A => B): Option[B] = this match {
@@ -37,6 +37,17 @@ object Ch4 {
 
   def map2[A, B, C](oa: Option[A], ob: Option[B])(f: (A, B) => C): Option[C] =
     oa.flatMap(a => ob.map(b => f(a, b)))
+
+  // def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = (a, b) match {
+  //   case (Some(a), Some(b)) => Some(f(a, b))
+  //   case _ => None
+  // }
+
+  // def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+  //   for {
+  //     aa <- a
+  //     bb <- b
+  //   } yield f(aa, bb)
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
     // i gave up on this one after a good fight 
