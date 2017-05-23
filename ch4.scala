@@ -76,7 +76,7 @@ object Ch4 {
       def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] =
         this match {
           case Left(_) => b
-          case Right(b) => Right(a) // or even `this`
+          case Right(a) => Right(a) // or even `this`
         }
 
       def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
@@ -86,12 +86,20 @@ object Ch4 {
         } yield f(a, b1)
         // (this, b) match {
         //   case (Right(a), Right(b)) => Right(f(a,b))
-        //   case (Right(a), Left(e)) => Left(e)
         //   case (Left(e), _) => Left(e)
+        //   case (_, Left(e)) => Left(e)
         // }
     }
     case class Left[+E](value: E) extends Either[E, Nothing]
     case class Right[+A](value: A) extends Either[Nothing, A]
 
+    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+      es.foldRight[Either[E, List[A]]](Right(Nil))((x, y) => x.map2(y)(_ :: _))
+
+    // i swear to heck this is exactly like
+    // https://github.com/fpinscala/fpinscala/blob/master/answers/src/main/scala/fpinscala/errorhandling/Either.scala#L51
+    // but it doesn't type check
+    def traverse[E, A, B](es: List[Either[E, A]])(f: A => Either[E, B]): Either[E, List[B]] =
+      es.foldRight[Either[E, List[B]]](Right(Nil))((x, y) => f(x).map2(y)(_ :: _))
   }
 }
