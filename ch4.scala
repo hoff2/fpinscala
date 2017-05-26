@@ -58,7 +58,7 @@ object Ch4 {
       a.foldRight[Option[List[B]]](Some(Nil))((x, y) => map2(f(x), y)(_ :: _))
   }
 
-  object Either {
+  object Ch4_Either {
 
     sealed trait Either[+E, +A] {
       def map[B](f: A => B): Either[E, B] =
@@ -96,11 +96,7 @@ object Ch4 {
     def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
       es.foldRight[Either[E, List[A]]](Right(Nil))((x, y) => x.map2(y)(_ :: _))
 
-    // i swear to heck this is exactly like
-    // https://github.com/fpinscala/fpinscala/blob/master/answers/src/main/scala/fpinscala/errorhandling/Either.scala#L51
-    // but it doesn't type check
-    def traverse[E, A, B](es: List[Either[E, A]])(f: A => Either[E, B]): Either[E, List[B]] =
-      ???
-      //es.foldRight[Either[E, List[B]]](Right(Nil))((x, y) => f(x).map2(y)(_ :: _))
+    def traverse[E, A, B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+      es.foldRight[Either[E, List[B]]](Right(Nil))((x, y) => f(x).map2(y)(_ :: _))
   }
 }
