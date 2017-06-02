@@ -1,56 +1,86 @@
-// object Ex5 {
+//package fpinscala.laziness
 
-//   sealed trait Stream[+A] {
-//     def headOption: Option[A] = this match {
-//       case Empty => None
-//       case Cons(h, t) => Some(h())
-//     }
+object Ch5 {
 
-//     // 5.1
-//     def toList: List[A] = this match {
-//       case Empty => List()
-//       case Cons(h, t) => h() +: t().toList
-//     }
+  case object Empty extends Stream[Nothing]
+  case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
-//     // 5.2
-//     def take(n: Int): Stream[A] = (this, n) match {
-//       case (_, 0)          => Empty
-//       case (Empty, _)      => Empty //error("ran out of stream!")
-//       case (Cons(h, t), _) => Cons(h, () => t().take(n-1))
-//     }
+  object Stream {
+    def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
+      lazy val head = hd
+      lazy val tail = tl
+      Cons(() => head, () => tail)
+    }
+    def empty[A]: Stream[A] = Empty
 
-//     def drop(n: Int): Stream[A] = (this, n) match {
-//       case (_, 0)          => this
-//       case (Empty, _)      => this //error("ran out of stream!")
-//       case (Cons(h, t), _) => t().drop(n-1)
-//     }
+    def apply[A](as: A*): Stream[A] =
+      if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+  }
 
-//     // 5.3
-//     def takeWhile0(p: A => Boolean): Stream[A] = this match {
-//       case Cons(h, t) if (p(h())) => Cons(h, () => t().takeWhile0(p))
-//       case _ => Empty
-//     }
+  sealed trait Stream[+A] {
+    def headOption: Option[A] = this match {
+      case Empty => None
+      case Cons(h, t) => Some(h())
+    }
 
-//     def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
-//       case Cons(h,t) => f(h(), t().foldRight(z)(f))
-//       case _ => z
-//     }
+    def toList: List[A] = this match {
+      case Empty => List()
+      case Cons(h, t) => h() +: t().toList
+    }
 
-//     def exists(p: A => Boolean): Boolean = foldRight(false)((a, b) => p(a) || b)
+    def take(n: Int): Stream[A] = (this, n) match {
+      case (Cons(h, t), n) if (n > 0) => Cons(h, () => t().take(n - 1))
+      case _ => Empty
+    }
 
-//     // 5.4
-//     def forAll(p: A => Boolean): Boolean = foldRight(true)((a, b) => p(a) && b)
+    def drop(n: Int): Stream[A] = (this, n) match {
+      case (Cons(h, t), n) if (n > 0) => t().drop(n - 1)
+      case _ => this
+    }
 
-//     // 5.5
-//     // works but is weird/long
-// //    import Stream._
-//     def takeWhile(p: A => Boolean): Stream[A] =
-//       foldRight(Empty: Stream[A])((a, b) =>
-//         if (p(a)) Cons(a, b)
-//         else Empty)
+    def takeWhile(p: A => Boolean): Stream[A] = this match {
+      case Cons(h, t) if (p(h())) => Cons(h, () => t().takeWhile(p))
+      case _ => Empty
+    }
 
-//     // 5.6
-//     def headOption0: Option[A] = foldRight(None: Option[A])((a, b) => Some(a))
+    def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+      case Cons(h,t) => f(h(), t().foldRight(z)(f))
+      case _ => z
+    }
+
+    def exists(p: A => Boolean): Boolean =
+      foldRight(false)((a, b) => p(a) || b)
+
+    def forAll(p: A => Boolean): Boolean =
+      foldRight(true)((a, b) => p(a) && b)
+
+    def takeWhile1(p: A => Boolean): Stream[A] =
+      foldRight(Empty: Stream[A])((a, b) =>
+        if (p(a)) Cons(() => a, () => b)
+        else Empty)
+
+    def headOption1: Option[A] =
+      foldRight(None: Option[A])((a, b) => Some(a))
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //     // 5.7
 //     // def map[A, B](f: A => B) =
