@@ -61,6 +61,21 @@ object Ch5 {
 
     def headOption1: Option[A] =
       foldRight(None: Option[A])((a, b) => Some(a))
+
+    def map[B](f: A => B): Stream[B] =
+      foldRight(Empty: Stream[B])((a, b) =>
+        Cons(() => f(a), () => b))
+
+    def filter(p: A => Boolean): Stream[A] =
+      foldRight(Empty: Stream[A])((a, b) =>
+        if (p(a)) Cons(() => a, () => b)
+        else b)
+
+    def append[B>:A](c: => Stream[B]): Stream[B] =
+      foldRight(c)((a, b) => Cons(() => a, () => b))
+
+    def flatMap[B](f: A => Stream[B]): Stream[B] =
+      foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
   }
 }
 
@@ -82,17 +97,7 @@ object Ch5 {
 
 
 
-//     // 5.7
-//     // def map[A, B](f: A => B) =
-//     //   foldRight(Empty: Stream[B])((h, t) => Cons(() => f(h), () => t))
-//     def map[B](f: A => B): Stream[B] =
-//       foldRight(Empty[B])((h,t) => cons(f(h), t))
 
-//     def append[B>:A](s: => Stream[B]): Stream[B] =
-//       foldRight(s)((h, t) => Cons(h, t))
-
-//     def flatMap[B](f: A => Stream[B]): Stream[B] =
-//       foldRight(Empty[B])((h, t) => f(h).append(t))
 
 //     // why doesVthis have to be a B? O_o
 //     def filter[B](f: A => Boolean): Stream[A] =
