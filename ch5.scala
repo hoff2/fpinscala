@@ -41,6 +41,8 @@ object Ch5 {
     def ufibs: Stream[Int] = unfold((0, 1)){
       case (f0, f1) => Some((f0, (f1, f0 + f1)))
     }
+
+    def uOnes: Stream[Int] = uconstant(1)
   }
 
   sealed trait Stream[+A] {
@@ -121,7 +123,11 @@ object Ch5 {
       case _ => None
     }
 
+    def uZipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = ???
+
   }
+
+  // =========================================
 
   def main(args: Array[String]):Unit = {
     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
