@@ -31,7 +31,7 @@ object Ch5 {
     def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
       f(z) match {
         case None => Empty
-        case Some((a, s)) => Stream.cons(a, unfold(z)(f))
+        case Some((a, s)) => Stream.cons(a, unfold(s)(f))
       }
 
     def uconstant[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
@@ -132,7 +132,7 @@ object Ch5 {
           Some((f(ah(), bh()), (at(), bt())))
         case _ => None
       }
-    // toList infinite-loops on a result of this, that's some bullshit
+    // toList infinite-loops on a result from this, that's some bullshit
 
   }
 
@@ -141,7 +141,10 @@ object Ch5 {
   def main(args: Array[String]):Unit = {
     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
-    
+    println(a.umap(_ * 3).toList)
+    println(a.utake(3).toList)
+    println(a.uTakeWhile(_ < 6).toList)
+    println(a.uZipWith(b)(_ + _).toList)
   }
 }
 
