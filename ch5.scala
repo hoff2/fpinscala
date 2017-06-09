@@ -98,7 +98,10 @@ object Ch5 {
   def uconstant[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
 
   def ufrom(n: Int): Stream[Int] = unfold(n)(p => Some(p, p+1))
-}
+
+  def ufibs: Stream[Int] = unfold((0, 1)){ case (f0, f1) => Some((f0, (f1, f0 + f1))) }
+
+
 
 
 
