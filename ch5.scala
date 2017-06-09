@@ -77,6 +77,27 @@ object Ch5 {
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
   }
+
+  val ones: Stream[Int] = Stream.cons(1, ones)
+
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
+
+  def fibs: Stream[Int] = {
+    def from(f0: Int, f1: Int): Stream[Int] = Stream.cons(f0, from(f1, f0 + f1))
+    from(0, 1)
+  }
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) match {
+      case None => Empty
+      case Some((a, s)) => Stream.cons(a, unfold(z)(f))
+    }
+
+  def uconstant[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
+
+  def ufrom(n: Int): Stream[Int] = unfold(n)(p => Some(p, p+1))
 }
 
 
@@ -99,9 +120,6 @@ object Ch5 {
 
 
 
-//     // why doesVthis have to be a B? O_o
-//     def filter[B](f: A => Boolean): Stream[A] =
-//       foldRight(Empty[A])((h, t) => if (f(h)) cons(h, t) else t)
 
 //     // 5.13
 //     def umap[B](f: A => B): Stream[B] = unfold(this){
