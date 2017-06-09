@@ -132,7 +132,6 @@ object Ch5 {
           Some((f(ah(), bh()), (at(), bt())))
         case _ => None
       }
-    // toList infinite-loops on a result from this, that's some bullshit
 
   }
 
@@ -159,11 +158,6 @@ object Ch5 {
 
 
 
-//     // i misunderstood the meaning of "with" here (didn't refer back to ch. 3)
-//     def uzipWith[B](those: Stream[B]): Stream[(A, B)] = unfold((this, those)){
-//       case (Empty, _) | (_, Empty) => None
-//       case (Cons(ah, at), Cons(bh, bt)) => Some((ah(), bh()), (at(), bt()))
-//     }
 
 //     def uzipAll[B](those: Stream[B]): Stream[(Option[A], Option[B])] = unfold((this, those)){
 //       case (Empty, Empty)               => None
