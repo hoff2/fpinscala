@@ -108,25 +108,31 @@ object Ch5 {
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
 
-    def umap[B](f: A => B): Stream[B] = unfold(this){
-      case Cons(h, t) => Some((f(h()), t()))
-      case _          => None
-    }
+    def umap[B](f: A => B): Stream[B] =
+      unfold(this) {
+        case Cons(h, t) => Some((f(h()), t()))
+        case _ => None
+      }
 
-    def utake(n: Int): Stream[A] = unfold(this, n){
-      case (_, 0) | (Empty, _) => None
-      case (Cons(h, t), n) => Some((h(), (t(), n - 1)))
-    }
+    def utake(n: Int): Stream[A] =
+      unfold((this, n)) {
+        case (_, 0) | (Empty, _) => None
+        case (Cons(h, t), n) => Some((h(), (t(), n - 1)))
+      }
 
-    def uTakeWhile(f: A => Boolean): Stream[A] = unfold(this){
-      case Cons(h, t) if (f(h())) => Some((h(), t()))
-      case _ => None
-    }
+    def uTakeWhile(f: A => Boolean): Stream[A] =
+      unfold(this) {
+        case Cons(h, t) if (f(h())) => Some((h(), t()))
+        case _ => None
+      }
 
-    def uZipWith[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] = unfold((this, b)) {
-      case (Empty, _) | (_, Empty) => None
-      case (Cons(ah, at), Cons(bh, bt)) => Some((f(ah(), bh()), (at(), bt())))
-    }
+    def uZipWith[B, C](b: Stream[B])(f: (A, B) => C): Stream[C] =
+      unfold((this, b)) {
+        case (Cons(ah, at), Cons(bh, bt)) =>
+          Some((f(ah(), bh()), (at(), bt())))
+        case _ => None
+      }
+    // toList infinite-loops on a result of this, that's some bullshit
 
   }
 
@@ -135,7 +141,7 @@ object Ch5 {
   def main(args: Array[String]):Unit = {
     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
-    println(a.uZipWith(b)(_ + _).toList)
+    
   }
 }
 
