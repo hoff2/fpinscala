@@ -11,13 +11,42 @@ object Ch5 {
       lazy val tail = tl
       Cons(() => head, () => tail)
     }
+
     def empty[A]: Stream[A] = Empty
 
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+    val ones: Stream[Int] = Stream.cons(1, ones)
+
+    def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
+
+    def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
+
+    def fibs: Stream[Int] = {
+      def from(f0: Int, f1: Int): Stream[Int] = Stream.cons(f0, from(f1, f0 + f1))
+      from(0, 1)
+    }
+
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+      f(z) match {
+        case None => Empty
+        case Some((a, s)) => Stream.cons(a, unfold(z)(f))
+      }
+
+    def uconstant[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
+
+    def ufrom(n: Int): Stream[Int] = unfold(n)(p => Some(p, p+1))
+
+    def ufibs: Stream[Int] = unfold((0, 1)){
+      case (f0, f1) => Some((f0, (f1, f0 + f1)))
+    }
   }
 
   sealed trait Stream[+A] {
+
+    import Ch5.Stream._
+
     def headOption: Option[A] = this match {
       case Empty => None
       case Cons(h, t) => Some(h())
@@ -76,44 +105,29 @@ object Ch5 {
 
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
-  }
 
-  val ones: Stream[Int] = Stream.cons(1, ones)
-
-  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
-
-  def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
-
-  def fibs: Stream[Int] = {
-    def from(f0: Int, f1: Int): Stream[Int] = Stream.cons(f0, from(f1, f0 + f1))
-    from(0, 1)
-  }
-
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
-    f(z) match {
-      case None => Empty
-      case Some((a, s)) => Stream.cons(a, unfold(z)(f))
+    def umap[B](f: A => B): Stream[B] = unfold(this){
+      case Cons(h, t) => Some((f(h()), t()))
+      case _          => None
     }
 
-  def uconstant[A](a: A): Stream[A] = unfold(a)(_ => Some((a, a)))
+    def utake(n: Int): Stream[A] = unfold(this, n){
+      case (_, 0) | (Empty, _) => None
+      case (Cons(h, t), n) => Some((h(), (t(), n - 1)))
+    }
 
-  def ufrom(n: Int): Stream[Int] = unfold(n)(p => Some(p, p+1))
+    def uTakeWhile(f: A => Boolean): Stream[A] = unfold(this){
+      case Cons(h, t) if (f(h())) => Some((h(), t()))
+      case _ => None
+    }
 
-  def ufibs: Stream[Int] = unfold((0, 1)){ case (f0, f1) => Some((f0, (f1, f0 + f1))) }
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  def main(args: Array[String]):Unit = {
+    val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
+    println(a.takeWhile(_ < 6).toList)
+  }
+}
 
 
 
@@ -124,21 +138,7 @@ object Ch5 {
 
 
 
-//     // 5.13
-//     def umap[B](f: A => B): Stream[B] = unfold(this){
-//       case Cons(h, t) => Some((f(h()), t()))
-//       case _          => None
-//     }
 
-//     def utake(n: Int): Stream[A] = unfold((this, n)){
-//       case (_, 0) | (Empty, _) => None
-//       case (Cons(h, t), n)     => Some((h(), (t(), n-1)))
-//     }
-
-//     def utakeWhile(p: A => Boolean): Stream[A] = unfold(this){
-//       case Empty      => None
-//       case Cons(h, t) => if (p(h())) Some((h(), t())) else None
-//     }
 
 //     // i misunderstood the meaning of "with" here (didn't refer back to ch. 3)
 //     def uzipWith[B](those: Stream[B]): Stream[(A, B)] = unfold((this, those)){
