@@ -123,7 +123,10 @@ object Ch5 {
       case _ => None
     }
 
-    def uZipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = ???
+    def uZipWith[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = unfold((this, s)){
+      case (Empty, _) | (_, Empty) => None
+      case (Cons(ah, at), Cons(bh, bt)) => Some((f(ah(), bh()), (at(), bt())))
+    }
 
   }
 
