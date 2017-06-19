@@ -140,10 +140,6 @@ object Ch5 {
   def main(args: Array[String]):Unit = {
     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
-    println(a.umap(_ * 3).toList)
-    println(a.utake(3).toList)
-    println(a.uTakeWhile(_ < 6).toList)
-    println(a.uZipWith(b)(_ + _).toList)
   }
 }
 
