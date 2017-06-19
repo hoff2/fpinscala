@@ -147,6 +147,13 @@ object Ch5 {
       case (Empty, _) => false
       case (Cons(h1, t1), Cons(h2, t2)) => (h1() == h2()) && t1().startsWith(t2())
     }
+
+    // 5.15
+    def tails: Stream[Stream[A]] = unfold(this){
+      case Empty => None
+      case (Cons(_, t)) => Some((t(), t()))
+    }
+
   }
 
   // =========================================
@@ -156,20 +163,10 @@ object Ch5 {
     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
     println(a.startsWith(Ch5.Stream.apply(1, 2, 3)))
     println(b.startsWith(Ch5.Stream.apply(1, 2, 3)))
+    println(b.tails.map(_.toList).toList)
   }
 }
 
-
-
-
-
-//     // 5.15
-//     def tails: Stream[Stream[A]] = unfold(this){
-//       case Empty        => None
-//       case (Cons(_, t)) => Some((t(), t()))
-//     }
-
-//     def hasSubsequence[A](s: Stream[A]): Boolean = tails exists (_ startsWith s)
 
 //     // 5.16
 //     // did anyone figure this out? I don't think this solution is linear time
