@@ -154,6 +154,13 @@ object Ch5 {
       case (Cons(_, t)) => Some((t(), t()))
     }
 
+    //     // 5.16
+    //     // did anyone figure this out? I don't think this solution is linear time
+    //     // as required, even if it did compile
+    //     // def scanRight(z: => A)(f: (A, => A) => A): Stream[A] = unfold(this){
+    //     //   case Empty        => None
+    //     //   case (Cons(_, t)) => Some((t().foldRight(z)(f), t()))
+    //     //
   }
 
   // =========================================
@@ -166,58 +173,3 @@ object Ch5 {
     println(b.tails.map(_.toList).toList)
   }
 }
-
-
-//     // 5.16
-//     // did anyone figure this out? I don't think this solution is linear time
-//     // as required, even if it did compile
-//     // def scanRight(z: => A)(f: (A, => A) => A): Stream[A] = unfold(this){
-//     //   case Empty        => None
-//     //   case (Cons(_, t)) => Some((t().foldRight(z)(f), t()))
-//     // }
-//   }
-
-//   case object Empty extends Stream[Nothing]
-//   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
-
-//   object Stream {
-//     def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
-//       lazy val head = hd
-//       lazy val tail = tl
-//       Cons(() => head, () => tail)
-//     }
-
-//     def empty[A]: Stream[A] = Empty
-
-//     def apply[A](as: A*): Stream[A] =
-//       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
-
-//     // 5.8
-//     def constant[A](a: A): Stream[A] = cons(a, constant(a))
-
-//     // 5.9
-//     def from(n: Int): Stream[Int] = cons(n, from(n + 1))
-
-//     // 5.10
-//     def fibs: Stream[Int] = {
-//       def fibsFrom(n1: Int, n2: Int): Stream[Int] =
-//         cons(n1, fibsFrom(n2, n1+n2))
-//       fibsFrom(0, 1)
-//     }
-
-//     // 5.11
-//     def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
-//       case None => empty
-//       case Some((a, s)) => cons(a, unfold(s)(f))
-//     }
-
-//     // 5.12
-//     def ufibs: Stream[Int] = Stream.unfold((0, 1))(s => Some(s._1, (s._2, s._1+s._2)))
-
-//     def uconstant[A](a: A): Stream[A] = unfold(a)(s => Some((s, s)))
-
-//     def ufrom(n: Int): Stream[Int] = unfold(n)(s => Some((s, s+1)))
-
-//     def uones = uconstant(1)
-//   }
-// }
