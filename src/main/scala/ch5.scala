@@ -133,6 +133,20 @@ object Ch5 {
         case _ => None
       }
 
+    // wonder if anyone got anything more concise
+    def uzipAll[B](those: Stream[B]): Stream[(Option[A], Option[B])] = unfold((this, those)) {
+      case (Empty, Empty) => None
+      case (Empty, Cons(bh, bt)) => Some((None, Some(bh())), (Empty, bt()))
+      case (Cons(ah, at), Empty) => Some((Some(ah()), None), (at(), Empty))
+      case (Cons(ah, at), Cons(bh, bt)) => Some((Some(ah()), Some(bh())), (at(), bt()))
+    }
+
+    // 5.14
+    def startsWith[A](what: Stream[A]): Boolean = (this, what) match {
+      case (_, Empty) => true
+      case (Empty, _) => false
+      case (Cons(h1, t1), Cons(h2, t2)) => (h1() == h2()) && t1().startsWith(t2())
+    }
   }
 
   // =========================================
@@ -140,38 +154,14 @@ object Ch5 {
   def main(args: Array[String]):Unit = {
     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
-    println(a.umap(_ * 3).toList)
-    println(a.utake(3).toList)
-    println(a.uTakeWhile(_ < 6).toList)
-    println(a.uZipWith(b)(_ + _).toList)
+    println(a.startsWith(Ch5.Stream.apply(1, 2, 3)))
+    println(b.startsWith(Ch5.Stream.apply(1, 2, 3)))
   }
 }
 
 
 
 
-
-
-
-
-
-
-
-
-
-//     def uzipAll[B](those: Stream[B]): Stream[(Option[A], Option[B])] = unfold((this, those)){
-//       case (Empty, Empty)               => None
-//       case (Empty, Cons(bh, bt))        => Some((None,       Some(bh())), (Empty, bt()))
-//       case (Cons(ah, at), Empty)        => Some((Some(ah()), None),       (at(), Empty))
-//       case (Cons(ah, at), Cons(bh, bt)) => Some((Some(ah()), Some(bh())), (at(), bt()))
-//     }
-
-//     // 5.14
-//     def startsWith[A](what: Stream[A]): Boolean = (this, what) match {
-//       case (_, Empty) => true
-//       case (Empty, _) => false
-//       case (Cons(h1, t1), Cons(h2, t2)) => (h1() == h2()) && t1().startsWith(t2())
-//     }
 
 //     // 5.15
 //     def tails: Stream[Stream[A]] = unfold(this){
