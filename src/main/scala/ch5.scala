@@ -160,7 +160,11 @@ object Ch5 {
     //     // def scanRight(z: => A)(f: (A, => A) => A): Stream[A] = unfold(this){
     //     //   case Empty        => None
     //     //   case (Cons(_, t)) => Some((t().foldRight(z)(f), t()))
-    //     //
+
+    def scanRight[B](z: => B)(f: (A, => B) => B): Stream[B] =
+      foldRight(Stream(z))((a, acc) =>
+        cons(f(a, acc.headOption.getOrElse(z)), acc))
+
   }
 
   // =========================================
