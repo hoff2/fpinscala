@@ -55,7 +55,7 @@ object Ch6 {
 
   val int: Rand[Int] = _.nextInt
 
-  def unit[A](a:A): Rand[A] = rng => (a, rng)
+  def unit[A](a: A): Rand[A] = rng => (a, rng)
 
   def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
     rng => {
@@ -74,6 +74,12 @@ object Ch6 {
       val (b, rng3) = rb(rng2)
       (f(a, b), rng3)
     }
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(Nil: List[A]))((f, acc) => map2(f, acc)(_ :: _))
+
+
+  // ========================================
 
   def main(args: Array[String]): Unit = {
     println("========================================")
