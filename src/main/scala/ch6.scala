@@ -84,9 +84,9 @@ object Ch6 {
       g(a)(rng1)
     }
 
-  def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
-    flatMap(nonNegativeInt(rng))
-  }
+  // def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+  //   flatMap(nonNegativeInt(rng))
+  // }
 
   def _map[A, B](s: Rand[A])(f: A => B): Rand[B] =
     flatMap(s)(a => unit(f(a)))
