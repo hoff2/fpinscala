@@ -169,11 +169,12 @@ object Ch5 {
 
   // =========================================
 
-  // def main(args: Array[String]):Unit = {
-  //   val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
-  //   val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
-  //   println(a.startsWith(Ch5.Stream.apply(1, 2, 3)))
-  //   println(b.startsWith(Ch5.Stream.apply(1, 2, 3)))
-  //   println(b.tails.map(_.toList).toList)
-  // }
+//   def main(args: Array[String]):Unit = {
+//     val a = Ch5.Stream.apply(1, 2, 3, 4, 5, 6, 7)
+//     val b = Ch5.Stream.apply(8, 9, 10, 11, 12)
+//     println(a.startsWith(Ch5.Stream.apply(1, 2, 3)))
+//     println(b.startsWith(Ch5.Stream.apply(1, 2, 3)))
+//     println(b.tails.map(_.toList).toList)
+//   }
+
 }
