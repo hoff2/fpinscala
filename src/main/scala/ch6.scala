@@ -78,12 +78,28 @@ object Ch6 {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(Nil: List[A]))((f, acc) => map2(f, acc)(_ :: _))
 
-
   // ========================================
 
-  def main(args: Array[String]): Unit = {
-    println("========================================")
-    val rng = SimpleRNG(239847923)
-    println(mdouble(rng))
-  }
+  // def main(args: Array[String]): Unit = {
+  //   println("========================================")
+  //   val rng = SimpleRNG(239847923)
+  //   println(mdouble(rng))
+  // }
+}
+
+object SixEleven {
+
+  case class State[S, +A](run: S => (A, S))
+
+  sealed trait Input
+  case object Coin extends Input
+  case object Turn extends Input
+
+  case class Machine(locked: Boolean, candies: Int, coins: Int)
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+    State((machine: Machine) => ((1, 1), machine))
+
+  // def main(args: Array[String]): Unit = {
+  //   println("========================================")
 }
