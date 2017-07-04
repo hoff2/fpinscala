@@ -59,8 +59,8 @@ object Ch6 {
 
   def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
     rng => {
-      val (a, rng2) = s(rng)
-      (f(a), rng2)
+      val (a, rng_) = s(rng)
+      (f(a), rng_)
     }
 
   // 6.5
@@ -69,14 +69,56 @@ object Ch6 {
   }
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
-    rng => {
-      val (a, rng2) = ra(rng)
-      val (b, rng3) = rb(rng2)
-      (f(a, b), rng3)
+    rng0 => {
+      val (a, rng1) = ra(rng0)
+      val (b, rng2) = rb(rng1)
+      (f(a, b), rng2)
     }
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(Nil: List[A]))((f, acc) => map2(f, acc)(_ :: _))
+
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rng0 => {
+      val (a, rng1) = f(rng0)
+      g(a)(rng1)
+    }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+    flatMap(nonNegativeInt(rng))
+  }
+
+  def _map[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s)(a => unit(f(a)))
+
+  def _map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => _map(rb)(b => f(a, b)))
+
+
+  case class State[S, +A](run: S => (A, S)) {
+
+    def flatMap[B](f: A => State[S, B]): State[S, B] =
+      State(s0 => {
+        val (a, s1) = run(s0)
+        f(a).run(s1)
+      })
+
+    def map[B](f: A => B): State[S, B] =
+      flatMap(a => State.unit(f(a)))
+
+    def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+      flatMap(a => sb.map(b => f(a, b)))
+  }
+
+  object State {
+
+    def unit[S, A](a: A): State[S, A] = State(state => (a, state))
+
+    def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] =
+      sas.reverse.foldLeft(
+        unit[S, List[A]](List()))(
+        (acc, sa) => sa.map2(acc)(_ :: _))
+  }
 
   // ========================================
 
@@ -89,7 +131,7 @@ object Ch6 {
 
 object SixEleven {
 
-  case class State[S, +A](run: S => (A, S))
+  import Ch6.State
 
   sealed trait Input
   case object Coin extends Input
