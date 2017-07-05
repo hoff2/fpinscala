@@ -137,10 +137,21 @@ object SixEleven {
   case object Coin extends Input
   case object Turn extends Input
 
-  case class Machine(locked: Boolean, candies: Int, coins: Int)
+  case class Machine(locked: Boolean, candies: Int, coins: Int) {
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+      inputs match {
+        case (i :: is) => State((m: Machine) => ((m.candies - 1, m.coins + 1), this))
+        case _ => State.unit((candies, coins))
+      }
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
-    State((machine: Machine) => ((1, 1), machine))
+    def interact(input: Input): Machine = (this, input) match {
+      case (Machine(_, 0, _), _) => this
+      case (Machine(true, a, o), Turn) => this
+      case (Machine(false, a, o), Coin) => this
+      case (Machine(true, a, o), Coin) => Machine(false, a, o)
+      case (Machine(false, a, o), Turn) => Machine(true, a - 1, o + 1)
+    }
+  }
 
   // def main(args: Array[String]): Unit = {
   //   println("========================================")
