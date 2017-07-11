@@ -118,6 +118,15 @@ object Ch6 {
       sas.reverse.foldLeft(
         unit[S, List[A]](List()))(
         (acc, sa) => sa.map2(acc)(_ :: _))
+
+    def modify[S](f: S => S): State[S, Unit] = for {
+      s <- get
+      _ <- set(f(s))
+    } yield ()
+
+    def get[S]: State[S, S] = State(s => (s, s))
+
+    def set[S](s: S): State[S, Unit] = State(_ => ((), s))
   }
 
   // ========================================
@@ -137,22 +146,33 @@ object SixEleven {
   case object Coin extends Input
   case object Turn extends Input
 
-  case class Machine(locked: Boolean, candies: Int, coins: Int) {
-    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
-      inputs match {
-        case (i :: is) => State((m: Machine) => ((m.candies - 1, m.coins + 1), this))
-        case _ => State.unit((candies, coins))
-      }
+  case class Machine(locked: Boolean, candies: Int, coins: Int)
 
-    def interact(input: Input): Machine = (this, input) match {
-      case (Machine(_, 0, _), _) => this
-      case (Machine(true, a, o), Turn) => this
-      case (Machine(false, a, o), Coin) => this
+  object Machine {
+
+    def interact(input: Input)(s: Machine): Machine = (s, input) match {
+      case (Machine(_, 0, _), _) => s
+      case (Machine(true, _, _), Turn) => s
+      case (Machine(false, _, _), Coin) => s
       case (Machine(true, a, o), Coin) => Machine(false, a, o)
       case (Machine(false, a, o), Turn) => Machine(true, a - 1, o + 1)
     }
+
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+      _ <- State.sequence(inputs map (State.modify[Machine] _ compose interact))
+      s <- State.get
+    } yield (s.coins, s.candies)
   }
 
-  // def main(args: Array[String]): Unit = {
-  //   println("========================================")
+  def main(args: Array[String]): Unit = {
+    println("========================================")
+    val m = Machine.simulateMachine(
+      List(
+        Coin, Turn,
+        Coin, Turn,
+        Coin, Turn,
+        Coin, Turn
+      )).run(Machine(true, 5, 10))
+    println(m)
+  }
 }
