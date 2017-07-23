@@ -167,15 +167,15 @@ object SixEleven {
     } yield (s.coins, s.candies)
   }
 
-  def main(args: Array[String]): Unit = {
-    println("========================================")
-    val m = Machine.simulateMachine(
-      List(
-        Coin, Turn,
-        Coin, Turn,
-        Coin, Turn,
-        Coin, Turn
-      )).run(Machine(true, 5, 10))
-    println(m)
-  }
+  // def main(args: Array[String]): Unit = {
+  //   println("========================================")
+  //   val m = Machine.simulateMachine(
+  //     List(
+  //       Coin, Turn,
+  //       Coin, Turn,
+  //       Coin, Turn,
+  //       Coin, Turn
+  //     )).run(Machine(true, 5, 10))
+  //   println(m)
+  // }
 }
