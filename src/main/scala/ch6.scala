@@ -127,6 +127,7 @@ object Ch6 {
     } yield ()
 
     def get[S]: State[S, S] = State(s => (s, s))
+
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
   }
 
@@ -148,21 +149,33 @@ object SixEleven {
   case object Coin extends Input
   case object Turn extends Input
 
-  case class Machine(locked: Boolean, candies: Int, coins: Int) {
-    def interact(input: Input): Machine = (this, input) match {
-      case (Machine(_, 0, _), _) => this
-      case (Machine(true, a, o), Turn) => this
-      case (Machine(false, a, o), Coin) => this
+  case class Machine(locked: Boolean, candies: Int, coins: Int)
+
+  object Machine {
+
+    def interact(input: Input)(s: Machine): Machine = (s, input) match {
+      case (Machine(_, 0, _), _) => s
+      case (Machine(true, _, _), Turn) => s
+      case (Machine(false, _, _), Coin) => s
       case (Machine(true, a, o), Coin) => Machine(false, a, o)
       case (Machine(false, a, o), Turn) => Machine(true, a - 1, o + 1)
     }
+
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+      _ <- State.sequence(inputs map (State.modify[Machine] _ compose interact))
+      s <- State.get
+    } yield (s.coins, s.candies)
   }
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
-      //((1, 1), machine)
-
-
-
-  // def main(args: Array[String]): Unit = {
-  //   println("========================================")
+  def main(args: Array[String]): Unit = {
+    println("========================================")
+    val m = Machine.simulateMachine(
+      List(
+        Coin, Turn,
+        Coin, Turn,
+        Coin, Turn,
+        Coin, Turn
+      )).run(Machine(true, 5, 10))
+    println(m)
+  }
 }
